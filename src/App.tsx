@@ -528,6 +528,14 @@ function App() {
     canvas.width = width;
     canvas.height = height;
 
+    // Instagram Stories safe zone: 80px top/bottom, 40px left/right
+    const safeTop = 80;
+    const safeBottom = 80;
+    const safeLeft = 40;
+    const safeRight = 40;
+    const safeWidth = width - safeLeft - safeRight; // 1000px
+    const safeHeight = height - safeTop - safeBottom; // 1760px
+
     // Background - matching website: #0f172a (slate-900)
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(0, 0, width, height);
@@ -571,12 +579,12 @@ function App() {
       ctx.fill();
     }
 
-    // Header section (matching website header)
-    const headerY = 100;
+    // Header section (matching website header) - within safe zone
+    const headerY = safeTop + 40; // 120px from top (within safe zone)
     
     // Moon icon circle background
     const iconSize = 60;
-    const iconX = 120;
+    const iconX = safeLeft + 60; // 100px from left (within safe zone)
     ctx.fillStyle = 'rgba(30, 58, 138, 0.5)'; // indigo-900/50
     ctx.beginPath();
     ctx.arc(iconX, headerY, iconSize / 2, 0, Math.PI * 2);
@@ -586,73 +594,80 @@ function App() {
     ctx.stroke();
 
     // Title - matching website gradient
-    const titleGradient = ctx.createLinearGradient(200, headerY - 20, 600, headerY - 20);
+    const titleX = safeLeft + 120; // 160px from left (within safe zone)
+    const titleGradient = ctx.createLinearGradient(titleX, headerY - 20, titleX + 400, headerY - 20);
     titleGradient.addColorStop(0, '#c7d2fe'); // indigo-200
     titleGradient.addColorStop(0.5, '#e9d5ff'); // purple-200
     titleGradient.addColorStop(1, '#c7d2fe'); // indigo-200
     ctx.fillStyle = titleGradient;
-    ctx.font = 'bold 64px Prompt, sans-serif';
+    ctx.font = 'bold 56px Prompt, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('ดวงดาวเสี่ยงโชค', 200, headerY);
+    ctx.fillText('ดวงดาวเสี่ยงโชค', titleX, headerY);
     
     // Subtitle
     ctx.fillStyle = '#818cf8'; // indigo-400
-    ctx.font = '28px Prompt, sans-serif';
-    ctx.fillText('Sacred Lottery Insight', 200, headerY + 40);
+    ctx.font = '24px Prompt, sans-serif';
+    ctx.fillText('Sacred Lottery Insight', titleX, headerY + 35);
 
-    // Main content section background (matching website section)
-    const sectionY = 250;
-    const sectionHeight = 1200;
+    // Main content section background (matching website section) - within safe zone
+    const sectionY = headerY + 100; // 220px from top
+    const sectionHeight = safeHeight - (sectionY - safeTop) - 200; // Leave 200px for footer
+    const sectionPadding = 40;
+    const sectionX = safeLeft + sectionPadding;
+    const sectionW = safeWidth - (sectionPadding * 2);
     const sectionGradient = ctx.createLinearGradient(0, sectionY, 0, sectionY + sectionHeight);
     sectionGradient.addColorStop(0, 'rgba(30, 58, 138, 0.6)'); // indigo-900/60
     sectionGradient.addColorStop(1, 'rgba(15, 23, 42, 0.8)'); // slate-900/80
     ctx.fillStyle = sectionGradient;
-    roundRect(ctx, 60, sectionY, width - 120, sectionHeight, 40);
+    roundRect(ctx, sectionX, sectionY, sectionW, sectionHeight, 40);
     ctx.fill();
     
     // Section border
     ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)'; // indigo-500/30
     ctx.lineWidth = 2;
-    roundRect(ctx, 60, sectionY, width - 120, sectionHeight, 40);
+    roundRect(ctx, sectionX, sectionY, sectionW, sectionHeight, 40);
     ctx.stroke();
 
-    // Decorative blur circle (matching website)
-    const blurGradient = ctx.createRadialGradient(width / 2, sectionY + sectionHeight / 2, 0, width / 2, sectionY + sectionHeight / 2, width * 0.4);
+    // Decorative blur circle (matching website) - centered in section
+    const sectionCenterX = sectionX + sectionW / 2;
+    const sectionCenterY = sectionY + sectionHeight / 2;
+    const blurGradient = ctx.createRadialGradient(sectionCenterX, sectionCenterY, 0, sectionCenterX, sectionCenterY, sectionW * 0.4);
     blurGradient.addColorStop(0, 'rgba(99, 102, 241, 0.05)'); // indigo-500/5
     blurGradient.addColorStop(1, 'transparent');
     ctx.fillStyle = blurGradient;
     ctx.beginPath();
-    ctx.arc(width / 2, sectionY + sectionHeight / 2, width * 0.4, 0, Math.PI * 2);
+    ctx.arc(sectionCenterX, sectionCenterY, sectionW * 0.4, 0, Math.PI * 2);
     ctx.fill();
 
-    // Badge text (matching website)
-    const badgeY = sectionY + 80;
+    // Badge text (matching website) - within safe zone
+    const badgeY = sectionY + 60;
+    const badgeWidth = 380;
     ctx.fillStyle = 'rgba(234, 179, 8, 0.3)'; // yellow-500/30
     ctx.strokeStyle = 'rgba(234, 179, 8, 0.3)';
     ctx.lineWidth = 2;
-    roundRect(ctx, width / 2 - 200, badgeY - 25, 400, 50, 25);
+    roundRect(ctx, sectionCenterX - badgeWidth / 2, badgeY - 25, badgeWidth, 50, 25);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = '#fde047'; // yellow-200
-    ctx.font = 'bold 32px Prompt, sans-serif';
+    ctx.font = 'bold 28px Prompt, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('เสี่ยงทายจากสิ่งศักดิ์สิทธิ์', width / 2, badgeY + 8);
+    ctx.fillText('เสี่ยงทายจากสิ่งศักดิ์สิทธิ์', sectionCenterX, badgeY + 8);
 
-    // Main title
-    const mainTitleY = badgeY + 100;
-    const mainTitleGradient = ctx.createLinearGradient(width / 2 - 200, mainTitleY - 40, width / 2 + 200, mainTitleY - 40);
+    // Main title - within safe zone
+    const mainTitleY = badgeY + 90;
+    const mainTitleGradient = ctx.createLinearGradient(sectionCenterX - 180, mainTitleY - 35, sectionCenterX + 180, mainTitleY - 35);
     mainTitleGradient.addColorStop(0, '#fef3c7'); // yellow-100
     mainTitleGradient.addColorStop(1, '#ca8a04'); // yellow-600
     ctx.fillStyle = mainTitleGradient;
-    ctx.font = 'bold 56px Prompt, sans-serif';
-    ctx.fillText('เลขนำโชค', width / 2, mainTitleY);
+    ctx.font = 'bold 50px Prompt, sans-serif';
+    ctx.fillText('เลขนำโชค', sectionCenterX, mainTitleY);
 
-    // Emojis section (matching website emoji circles)
-    const emojiSize = 180;
-    const emojiY = mainTitleY + 120;
-    const emojiSpacing = 80;
+    // Emojis section (matching website emoji circles) - within safe zone
+    const emojiSize = 160;
+    const emojiY = mainTitleY + 100;
+    const emojiSpacing = 70;
     const emojiTotalWidth = (emojiSize * 3) + (emojiSpacing * 2);
-    const emojiStartX = (width - emojiTotalWidth) / 2 + emojiSize / 2;
+    const emojiStartX = sectionCenterX - emojiTotalWidth / 2 + emojiSize / 2;
 
     selectedEmojis.forEach((emoji, idx) => {
       const x = emojiStartX + idx * (emojiSize + emojiSpacing);
@@ -675,12 +690,12 @@ function App() {
       ctx.fillText(emoji, x, emojiY);
     });
 
-    // Numbers section (matching DigitBox component)
-    const numberSize = 280;
-    const numberY = emojiY + 300;
-    const numberSpacing = 100;
+    // Numbers section (matching DigitBox component) - within safe zone
+    const numberSize = 240;
+    const numberY = emojiY + 260;
+    const numberSpacing = 80;
     const numberTotalWidth = (numberSize * 3) + (numberSpacing * 2);
-    const numberStartX = (width - numberTotalWidth) / 2 + numberSize / 2;
+    const numberStartX = sectionCenterX - numberTotalWidth / 2 + numberSize / 2;
 
     predictionResult.forEach((num, idx) => {
       const x = numberStartX + idx * (numberSize + numberSpacing);
@@ -738,30 +753,44 @@ function App() {
       ctx.fillText(num, x, numberY);
     });
 
-    // Website URL section
+    // Website URL section - within safe zone (at least 80px from bottom)
     const websiteUrl = window.location.origin || 'https://lucky-number.app';
-    const urlY = height - 200;
+    const urlY = height - safeBottom - 140; // 1700px (80px + 140px from bottom)
+    const urlBoxWidth = Math.min(580, safeWidth - 40);
     
-    // URL background box
+    // URL background box - centered and within safe zone
     ctx.fillStyle = 'rgba(30, 41, 59, 0.6)'; // slate-800/60
     ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)'; // indigo-500/30
     ctx.lineWidth = 2;
-    roundRect(ctx, width / 2 - 300, urlY - 30, 600, 60, 30);
+    roundRect(ctx, sectionCenterX - urlBoxWidth / 2, urlY - 30, urlBoxWidth, 60, 30);
     ctx.fill();
     ctx.stroke();
     
-    // URL text
+    // URL text - truncate if too long
+    const maxUrlWidth = urlBoxWidth - 40;
     ctx.fillStyle = '#818cf8'; // indigo-400
-    ctx.font = 'bold 36px Prompt, sans-serif';
+    ctx.font = 'bold 32px Prompt, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(websiteUrl, width / 2, urlY + 10);
+    const urlMetrics = ctx.measureText(websiteUrl);
+    if (urlMetrics.width > maxUrlWidth) {
+      // Truncate URL if too long
+      let truncatedUrl = websiteUrl;
+      while (ctx.measureText(truncatedUrl + '...').width > maxUrlWidth && truncatedUrl.length > 0) {
+        truncatedUrl = truncatedUrl.slice(0, -1);
+      }
+      ctx.fillText(truncatedUrl + '...', sectionCenterX, urlY + 10);
+    } else {
+      ctx.fillText(websiteUrl, sectionCenterX, urlY + 10);
+    }
 
-    // Footer branding
+    // Footer branding - within safe zone (at least 80px from bottom)
+    const footerY1 = height - safeBottom - 60; // 1780px
+    const footerY2 = height - safeBottom - 30; // 1810px
     ctx.fillStyle = 'rgba(203, 213, 225, 0.6)'; // slate-300/60
-    ctx.font = '32px Prompt, sans-serif';
-    ctx.fillText('ดวงดาวเสี่ยงโชค', width / 2, height - 100);
-    ctx.font = '24px Prompt, sans-serif';
-    ctx.fillText('Sacred Lottery Insight', width / 2, height - 60);
+    ctx.font = '28px Prompt, sans-serif';
+    ctx.fillText('ดวงดาวเสี่ยงโชค', sectionCenterX, footerY1);
+    ctx.font = '20px Prompt, sans-serif';
+    ctx.fillText('Sacred Lottery Insight', sectionCenterX, footerY2);
 
     // Convert to blob and download
     canvas.toBlob((blob) => {
