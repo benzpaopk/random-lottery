@@ -975,7 +975,7 @@ function App() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-3 max-h-72 overflow-y-auto p-4 custom-scrollbar bg-slate-900/50 rounded-xl border border-indigo-500/30 shadow-inner">
+                  <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-3 max-h-72 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-slate-900/50 rounded-xl border border-indigo-500/30 shadow-inner">
                     {filteredEmojis.length > 0 ? (
                       filteredEmojis.map((emoji, idx) => {
                         const names = getEmojiName(emoji);
