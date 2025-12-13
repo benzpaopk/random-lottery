@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Sparkles, Moon, Star, Sun, RotateCcw, ShoppingCart, Search, Info, X, Shuffle } from 'lucide-react';
+import { Sparkles, Moon, Star, Sun, RotateCcw, ShoppingCart, Search, Info, X, Shuffle, Share2 } from 'lucide-react';
 
 const TOP_2_DIGITS = [
   { number: '98', frequency: 7 },
@@ -517,6 +517,144 @@ function App() {
     }
   };
 
+  const generateShareImage = async () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Instagram Stories size: 1080x1920
+    const width = 1080;
+    const height = 1920;
+    canvas.width = width;
+    canvas.height = height;
+
+    // Background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, '#1e3a8a'); // indigo-900
+    gradient.addColorStop(1, '#0f172a'); // slate-900
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, width, height);
+
+    // Add decorative stars
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    for (let i = 0; i < 50; i++) {
+      const x = Math.random() * width;
+      const y = Math.random() * height;
+      const size = Math.random() * 3 + 1;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Title
+    ctx.fillStyle = '#fbbf24'; // yellow-400
+    ctx.font = 'bold 72px Prompt, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('เลขนำโชค', width / 2, 200);
+
+    // Emojis section
+    const emojiSize = 200;
+    const emojiY = 400;
+    const spacing = 100;
+    const totalWidth = (emojiSize * 3) + (spacing * 2);
+    const startX = (width - totalWidth) / 2 + emojiSize / 2;
+
+    selectedEmojis.forEach((emoji, idx) => {
+      const x = startX + idx * (emojiSize + spacing);
+      ctx.font = `${emojiSize}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, x, emojiY);
+    });
+
+    // Numbers section
+    const numberSize = 300;
+    const numberY = 800;
+    const numberSpacing = 120;
+    const numberTotalWidth = (numberSize * 3) + (numberSpacing * 2);
+    const numberStartX = (width - numberTotalWidth) / 2 + numberSize / 2;
+
+    // Helper function for rounded rectangle
+    const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    };
+
+    predictionResult.forEach((num, idx) => {
+      const x = numberStartX + idx * (numberSize + numberSpacing);
+      const rectX = x - numberSize / 2;
+      const rectY = numberY - numberSize / 2;
+      
+      // Number background
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.3)'; // indigo-500 with opacity
+      roundRect(rectX, rectY, numberSize, numberSize, 30);
+      ctx.fill();
+
+      // Number border
+      ctx.strokeStyle = '#fbbf24'; // yellow-400
+      ctx.lineWidth = 8;
+      roundRect(rectX, rectY, numberSize, numberSize, 30);
+      ctx.stroke();
+
+      // Number text
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = `bold ${numberSize * 0.6}px Prompt, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(num, x, numberY);
+    });
+
+    // Footer text
+    ctx.fillStyle = 'rgba(203, 213, 225, 0.7)'; // slate-300 with opacity
+    ctx.font = '36px Prompt, sans-serif';
+    ctx.fillText('ดวงดาวเสี่ยงโชค', width / 2, height - 150);
+    ctx.font = '24px Prompt, sans-serif';
+    ctx.fillText('Sacred Lottery Insight', width / 2, height - 100);
+
+    // Convert to blob and download
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `lucky-number-${predictionResult.join('')}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Try to share using Web Share API if available (mobile)
+      // Note: File sharing may not be supported on all platforms
+      // The image is downloaded, and users can manually share it to Instagram Stories
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], `lucky-number-${predictionResult.join('')}.png`, { type: 'image/png' });
+        const shareData: any = {
+          title: `เลขนำโชค ${predictionResult.join('')}`,
+          text: `เลขนำโชคของฉัน: ${predictionResult.join('')}`,
+        };
+        
+        // Check if files can be shared
+        if (navigator.canShare({ files: [file] })) {
+          shareData.files = [file];
+        }
+        
+        navigator.share(shareData).catch(() => {
+          // If sharing fails, user can manually share the downloaded image
+        });
+      }
+    }, 'image/png');
+  };
+
   // Filter emojis based on search query
   const filteredEmojis = EMOJIS.filter(emoji => {
     if (!emojiFilter.trim()) return true;
@@ -614,12 +752,6 @@ function App() {
 
              {!isPredicting && !showBuyButton && (
                 <div className="w-full max-w-2xl animate-in fade-in duration-500">
-                  <div className="flex items-center justify-between mb-3 px-2">
-                    <div className="text-sm text-indigo-300/70">
-                      เลือกสัญลักษณ์: <span className="font-bold text-yellow-400">{selectedEmojis.length}/3</span>
-                    </div>
-                  </div>
-                  
                   {/* Randomizer Button */}
                   <div className="mb-4 flex justify-center">
                     <button
@@ -636,6 +768,12 @@ function App() {
                       <Shuffle className="w-5 h-5" />
                       <span className="font-medium">สุ่มเลือก 3 สัญลักษณ์</span>
                     </button>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-3 px-2">
+                    <div className="text-sm text-indigo-300/70">
+                      เลือกสัญลักษณ์: <span className="font-bold text-yellow-400">{selectedEmojis.length}/3</span>
+                    </div>
                   </div>
 
                   {/* Search Filter */}
@@ -744,11 +882,11 @@ function App() {
                     {showBuyButton && (
                       <div className="flex flex-col gap-4 animate-in slide-in-from-bottom duration-700 items-center">
                         <button
-                          className="bg-gradient-to-r from-emerald-600 to-green-700 text-white text-xl font-bold py-4 px-16 rounded-full shadow-[0_0_25px_rgba(5,150,105,0.5)] hover:shadow-green-400/30 hover:-translate-y-1 transition-all flex items-center gap-3 border border-green-400/30"
-                          onClick={() => alert(`คุณเลือกจะซื้อเลข ${predictionResult.join('')} ขอให้โชคดี!`)}
+                          className="bg-gradient-to-r from-pink-600 to-rose-600 text-white text-xl font-bold py-4 px-16 rounded-full shadow-[0_0_25px_rgba(219,39,119,0.5)] hover:shadow-pink-400/30 hover:-translate-y-1 transition-all flex items-center gap-3 border border-pink-400/30"
+                          onClick={generateShareImage}
                         >
-                          <ShoppingCart className="w-6 h-6" />
-                          ซื้อเลขนำโชค {predictionResult.join('')}
+                          <Share2 className="w-6 h-6" />
+                          แชร์เลขนำโชค!
                         </button>
                         <button
                           onClick={reset}
